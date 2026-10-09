@@ -9,7 +9,7 @@ import java.util.List;
 
 public class TransactionIngestor {
 
-    private static final int MAX_LINES = 1000;
+    private static final int MAX_LINES = 50_000;
 
     public List<Transaction> ingest(String fileName) throws IOException {
         List<Transaction> transactions = new ArrayList<>();
