@@ -1,37 +1,38 @@
 package br.com.zenon.fraud;
 
 import java.io.IOException;
-import java.math.BigDecimal;
-import java.math.RoundingMode;
-import java.util.Map;
+import java.util.List;
+import java.util.Optional;
 
 public class Main {
 
     public static void main(String[] args) throws IOException {
         String fileName = "data/PS_20174392719_1491204439457_log.csv";
-        FraudAnalyzer analyzer = new FraudAnalyzer(new TransactionIngestor().ingest(fileName));
+        List<Transaction> transactions = new TransactionIngestor().ingest(fileName);
 
-        System.out.println("1. Total de Fraudes: " + analyzer.fraudCount());
+        TransactionRepository listRepository = new TransactionListRepository(transactions);
+        printSearch(listRepository, "C12345");
+        printSearch(listRepository, "C1231006815");
 
-        System.out.println("2. Top 3 Fraudes de Maior Valor:");
-        for (BigDecimal amount : analyzer.largestFraudAmounts(3)) {
-            System.out.println(money(amount));
-        }
+        String worstCase = transactions.getLast().origin().name();
+        System.out.println("Busca na lista por " + worstCase + ": " + measure(listRepository, worstCase) + " ns");
 
-        System.out.println("3. Clientes Suspeitos:");
-        for (String customer : analyzer.largestSuspiciousCustomers(5)) {
-            System.out.println(customer);
-        }
-
-        System.out.println("4. Prejuízo Total: " + money(analyzer.totalLoss()));
-
-        System.out.println("5. Fraudes por Tipo:");
-        analyzer.fraudsByType().entrySet().stream()
-                .sorted(Map.Entry.comparingByKey())
-                .forEach(entry -> System.out.println("- " + entry.getKey() + ": " + entry.getValue()));
+        TransactionRepository mapRepository = new TransactionMapRepository(transactions);
+        System.out.println("Busca no mapa por " + worstCase + ": " + measure(mapRepository, worstCase) + " ns");
     }
 
-    private static String money(BigDecimal value) {
-        return value.setScale(2, RoundingMode.HALF_UP).toPlainString();
+    private static void printSearch(TransactionRepository repository, String originName) {
+        Optional<Transaction> transaction = repository.findByOriginName(originName);
+        if (transaction.isPresent()) {
+            System.out.println(transaction.get());
+        } else {
+            System.out.println("Transação não encontrada para o cliente " + originName);
+        }
+    }
+
+    private static long measure(TransactionRepository repository, String originName) {
+        long start = System.nanoTime();
+        repository.findByOriginName(originName);
+        return System.nanoTime() - start;
     }
 }
