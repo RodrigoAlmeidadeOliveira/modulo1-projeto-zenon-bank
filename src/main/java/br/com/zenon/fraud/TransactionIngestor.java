@@ -26,7 +26,11 @@ public class TransactionIngestor {
                 if (line.isBlank()) {
                     continue;
                 }
-                transactions.add(parse(line));
+                try {
+                    transactions.add(parse(line));
+                } catch (IllegalArgumentException error) {
+                    System.err.println("Erro: " + line + " | " + error);
+                }
                 read++;
             }
         }

@@ -17,5 +17,11 @@ public record Transaction(
         Objects.requireNonNull(amount, "amount");
         Objects.requireNonNull(origin, "origin");
         Objects.requireNonNull(recipient, "recipient");
+        if (step < 1) {
+            throw new IllegalArgumentException("step should be positive: " + step);
+        }
+        if (amount.signum() < 0) {
+            throw new IllegalArgumentException("amount should be positive: " + amount);
+        }
     }
 }
