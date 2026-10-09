@@ -7,15 +7,15 @@ public record Transaction(
         int step,
         TransactionType type,
         BigDecimal amount,
-        Customer origin,
-        Customer destination,
-        boolean fraud,
-        boolean flaggedFraud) {
+        TransactionCustomer origin,
+        TransactionCustomer recipient,
+        boolean isFraud,
+        boolean isFlaggedFraud) {
 
     public Transaction {
         Objects.requireNonNull(type, "type");
         Objects.requireNonNull(amount, "amount");
         Objects.requireNonNull(origin, "origin");
-        Objects.requireNonNull(destination, "destination");
+        Objects.requireNonNull(recipient, "recipient");
     }
 }
