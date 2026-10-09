@@ -28,10 +28,12 @@ class MethodGuardTest {
                 assertThrows(IllegalArgumentException.class, () -> MethodGuard.customerName("cliente")).getMessage());
 
         assertEquals(new BigDecimal("10.00"), MethodGuard.money(new BigDecimal("10.00"), "amount"));
+        assertEquals(new BigDecimal("100"), MethodGuard.money(new BigDecimal("1E+2"), "amount"));
+        assertEquals(new BigDecimal("10000000"), MethodGuard.money(new BigDecimal("1.0E7"), "amount"));
         assertEquals(
                 "amount is outside the allowed range",
                 assertThrows(IllegalArgumentException.class,
-                        () -> MethodGuard.money(new BigDecimal("1E+2"), "amount")).getMessage());
+                        () -> MethodGuard.money(new BigDecimal("1E+20"), "amount")).getMessage());
 
         assertEquals(1, MethodGuard.step(1));
         assertEquals(10_000, MethodGuard.step(10_000));

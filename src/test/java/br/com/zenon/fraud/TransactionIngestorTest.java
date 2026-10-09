@@ -211,6 +211,21 @@ class TransactionIngestorTest {
         }
     }
 
+    @Test
+    void acceptsTheScientificNotationUsedByPaySim() throws IOException {
+        try (DataCsv csv = DataCsv.write(HEADER + """
+
+                1,TRANSFER,1.0E7,C7162498,1.0E7,0.00,C945327594,0.00,0.00,1,0
+                """)) {
+            List<Transaction> transactions = ingestQuietly(csv);
+
+            assertEquals(1, transactions.size());
+            assertEquals(new BigDecimal("10000000"), transactions.getFirst().amount());
+            assertEquals(new BigDecimal("10000000"), transactions.getFirst().origin().oldBalance());
+            assertTrue(transactions.getFirst().isFraud());
+        }
+    }
+
     private List<Transaction> ingestQuietly(DataCsv csv) throws IOException {
         try (StderrCapture stderr = new StderrCapture()) {
             List<Transaction> transactions = ingestor.ingest(csv.relativePath());

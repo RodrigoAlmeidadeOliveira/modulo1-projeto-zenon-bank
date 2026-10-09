@@ -42,10 +42,11 @@ final class InputGuard {
         if (amount.signum() < 0) {
             throw new IllegalArgumentException(name + " should be positive: " + amount);
         }
-        if (amount.scale() < 0 || amount.scale() > 2 || amount.compareTo(MAX_MONEY) > 0) {
+        BigDecimal normalized = amount.scale() < 0 ? amount.setScale(0) : amount;
+        if (normalized.scale() > 2 || normalized.compareTo(MAX_MONEY) > 0) {
             throw new IllegalArgumentException(name + " is outside the allowed range");
         }
-        return amount;
+        return normalized;
     }
 
     static int requireStep(int step) {
