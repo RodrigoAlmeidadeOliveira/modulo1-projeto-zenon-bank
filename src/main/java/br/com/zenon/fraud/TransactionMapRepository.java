@@ -5,13 +5,15 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 
+import br.com.zenon.fraud.security.MethodGuard;
+
 public class TransactionMapRepository implements TransactionRepository {
 
     private final Map<String, Transaction> byOriginName;
 
     public TransactionMapRepository(List<Transaction> transactions) {
         Map<String, Transaction> index = new HashMap<>();
-        for (Transaction transaction : transactions) {
+        for (Transaction transaction : List.copyOf(MethodGuard.notNull(transactions, "transactions"))) {
             index.putIfAbsent(transaction.origin().name(), transaction);
         }
         this.byOriginName = Map.copyOf(index);
@@ -19,6 +21,6 @@ public class TransactionMapRepository implements TransactionRepository {
 
     @Override
     public Optional<Transaction> findByOriginName(String originName) {
-        return Optional.ofNullable(byOriginName.get(originName));
+        return MethodGuard.customerQuery(originName).map(byOriginName::get);
     }
 }

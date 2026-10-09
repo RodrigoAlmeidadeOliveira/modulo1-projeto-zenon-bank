@@ -1,7 +1,8 @@
 package br.com.zenon.fraud;
 
 import java.math.BigDecimal;
-import java.util.Objects;
+
+import br.com.zenon.fraud.security.MethodGuard;
 
 public record Transaction(
         int step,
@@ -13,15 +14,10 @@ public record Transaction(
         boolean isFlaggedFraud) {
 
     public Transaction {
-        Objects.requireNonNull(type, "type");
-        Objects.requireNonNull(amount, "amount");
-        Objects.requireNonNull(origin, "origin");
-        Objects.requireNonNull(recipient, "recipient");
-        if (step < 1) {
-            throw new IllegalArgumentException("step should be positive: " + step);
-        }
-        if (amount.signum() < 0) {
-            throw new IllegalArgumentException("amount should be positive: " + amount);
-        }
+        step = MethodGuard.step(step);
+        type = MethodGuard.notNull(type, "type");
+        amount = MethodGuard.money(amount, "amount");
+        origin = MethodGuard.notNull(origin, "origin");
+        recipient = MethodGuard.notNull(recipient, "recipient");
     }
 }

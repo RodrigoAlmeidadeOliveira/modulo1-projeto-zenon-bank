@@ -6,12 +6,14 @@ import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
 
+import br.com.zenon.fraud.security.MethodGuard;
+
 public class FraudAnalyzer {
 
     private final List<Transaction> transactions;
 
     public FraudAnalyzer(List<Transaction> transactions) {
-        this.transactions = List.copyOf(transactions);
+        this.transactions = List.copyOf(MethodGuard.notNull(transactions, "transactions"));
     }
 
     public long fraudCount() {
@@ -21,21 +23,23 @@ public class FraudAnalyzer {
     }
 
     public List<BigDecimal> largestFraudAmounts(int limit) {
+        int bounded = MethodGuard.limit(limit);
         return transactions.stream()
                 .filter(Transaction::isFraud)
                 .map(Transaction::amount)
                 .sorted(Comparator.reverseOrder())
-                .limit(limit)
+                .limit(bounded)
                 .toList();
     }
 
     public List<String> largestSuspiciousCustomers(int limit) {
+        int bounded = MethodGuard.limit(limit);
         return transactions.stream()
                 .filter(Transaction::isFraud)
                 .sorted(Comparator.comparing(Transaction::amount).reversed())
                 .map(transaction -> transaction.origin().name())
                 .distinct()
-                .limit(limit)
+                .limit(bounded)
                 .toList();
     }
 
@@ -47,8 +51,8 @@ public class FraudAnalyzer {
     }
 
     public Map<TransactionType, Long> fraudsByType() {
-        return transactions.stream()
+        return Map.copyOf(transactions.stream()
                 .filter(Transaction::isFraud)
-                .collect(Collectors.groupingBy(Transaction::type, Collectors.counting()));
+                .collect(Collectors.groupingBy(Transaction::type, Collectors.counting())));
     }
 }
