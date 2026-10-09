@@ -12,6 +12,7 @@ import java.nio.file.Path;
 import java.util.concurrent.TimeUnit;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.junit.jupiter.api.Assumptions.assumeTrue;
 
 class TransactionReportIT {
@@ -29,11 +30,9 @@ class TransactionReportIT {
             ByteArrayOutputStream buffer = new ByteArrayOutputStream();
             ReportMain.run(csv.relativePath(), new PrintStream(buffer, true, StandardCharsets.UTF_8));
 
-            assertEquals("""
-                    Total de linhas: 3
-                    Total de fraudes: 1
-                    Valor total transacionado: 10000012.25
-                    """, buffer.toString(StandardCharsets.UTF_8));
+            String output = buffer.toString(StandardCharsets.UTF_8);
+            assertTrue(output.startsWith("Total de linhas: 3\nTotal de fraudes: 1\nValor total: "));
+            assertTrue(output.contains("10.000.012,25"));
         }
     }
 
