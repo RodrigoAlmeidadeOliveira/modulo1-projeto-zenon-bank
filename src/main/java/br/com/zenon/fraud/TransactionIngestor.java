@@ -19,6 +19,13 @@ public class TransactionIngestor {
             + "nameDest,oldbalanceDest,newbalanceDest,isFraud,isFlaggedFraud";
 
     public List<Transaction> ingest(String fileName) throws IOException {
+        return ingest(fileName, MAX_LINES);
+    }
+
+    public List<Transaction> ingest(String fileName, int maxLines) throws IOException {
+        if (maxLines < 1 || maxLines > MAX_LINES) {
+            throw new IllegalArgumentException("line limit is outside the allowed range");
+        }
         Path source = MethodGuard.dataFile(fileName);
         List<Transaction> transactions = new ArrayList<>();
 
@@ -30,7 +37,7 @@ public class TransactionIngestor {
 
             String line;
             int read = 0;
-            while (read < MAX_LINES && (line = reader.readLine()) != null) {
+            while (read < maxLines && (line = reader.readLine()) != null) {
                 if (line.isBlank()) {
                     continue;
                 }

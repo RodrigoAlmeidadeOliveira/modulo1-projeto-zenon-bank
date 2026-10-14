@@ -226,6 +226,31 @@ class TransactionIngestorTest {
         }
     }
 
+    @Test
+    void stopsAtTheRequestedLineLimit() throws IOException {
+        try (DataCsv csv = DataCsv.write(HEADER + "\n" + row("C1") + "\n" + row("C2") + "\n" + row("C3") + "\n")) {
+            List<Transaction> transactions;
+            try (StderrCapture stderr = new StderrCapture()) {
+                transactions = ingestor.ingest(csv.relativePath(), 2);
+                assertEquals("", stderr.text());
+            }
+
+            assertEquals(2, transactions.size());
+            assertEquals("C1", transactions.getFirst().origin().name());
+            assertEquals("C2", transactions.getLast().origin().name());
+        }
+    }
+
+    @Test
+    void rejectsALineLimitOutsideTheIngestorCeiling() {
+        assertEquals(
+                "line limit is outside the allowed range",
+                assertThrows(IllegalArgumentException.class, () -> ingestor.ingest("data/../pom.xml", 0)).getMessage());
+        assertEquals(
+                "line limit is outside the allowed range",
+                assertThrows(IllegalArgumentException.class, () -> ingestor.ingest("data/qualquer.csv", 100_001)).getMessage());
+    }
+
     private List<Transaction> ingestQuietly(DataCsv csv) throws IOException {
         try (StderrCapture stderr = new StderrCapture()) {
             List<Transaction> transactions = ingestor.ingest(csv.relativePath());

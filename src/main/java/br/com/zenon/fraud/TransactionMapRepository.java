@@ -16,7 +16,13 @@ public class TransactionMapRepository implements TransactionRepository {
         for (Transaction transaction : List.copyOf(MethodGuard.notNull(transactions, "transactions"))) {
             index.putIfAbsent(transaction.origin().name(), transaction);
         }
-        this.byOriginName = Map.copyOf(index);
+        this.byOriginName = index;
+    }
+
+    @Override
+    public void save(Transaction transaction) {
+        MethodGuard.notNull(transaction, "transaction");
+        byOriginName.putIfAbsent(transaction.origin().name(), transaction);
     }
 
     @Override

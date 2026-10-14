@@ -56,6 +56,24 @@ class TransactionRepositoryTest {
                 mapRepository.findByOriginName("C1").orElseThrow());
     }
 
+    @ParameterizedTest
+    @MethodSource("repositories")
+    void savesANewOriginWithoutReplacingTheFirstOne(TransactionRepository repository) {
+        repository.save(Fixtures.legitimate("C3", "7.00"));
+        repository.save(Fixtures.legitimate("C1", "1.00"));
+
+        assertEquals(new java.math.BigDecimal("7.00"), repository.findByOriginName("C3").orElseThrow().amount());
+        assertEquals(new java.math.BigDecimal("10.00"), repository.findByOriginName("C1").orElseThrow().amount());
+    }
+
+    @ParameterizedTest
+    @MethodSource("repositories")
+    void rejectsANullTransaction(TransactionRepository repository) {
+        assertEquals(
+                "transaction",
+                assertThrows(NullPointerException.class, () -> repository.save(null)).getMessage());
+    }
+
     @Test
     void rejectsANullSource() {
         assertEquals(

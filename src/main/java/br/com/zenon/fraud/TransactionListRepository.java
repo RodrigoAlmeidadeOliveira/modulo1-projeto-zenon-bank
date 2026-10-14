@@ -1,5 +1,6 @@
 package br.com.zenon.fraud;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
@@ -10,7 +11,12 @@ public class TransactionListRepository implements TransactionRepository {
     private final List<Transaction> transactions;
 
     public TransactionListRepository(List<Transaction> transactions) {
-        this.transactions = List.copyOf(MethodGuard.notNull(transactions, "transactions"));
+        this.transactions = new ArrayList<>(List.copyOf(MethodGuard.notNull(transactions, "transactions")));
+    }
+
+    @Override
+    public void save(Transaction transaction) {
+        transactions.add(MethodGuard.notNull(transaction, "transaction"));
     }
 
     @Override
