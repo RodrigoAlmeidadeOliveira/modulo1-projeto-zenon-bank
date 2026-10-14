@@ -30,8 +30,8 @@ public final class IngestionMain {
             EfficientTransactionIngestor ingestor,
             int connections) throws IOException, SQLException {
         MethodGuard.notNull(ingestor, "ingestor");
-        try {
-            MethodGuard.notNull(out, "out");
+        MethodGuard.notNull(out, "out");
+        try (ingestor) {
             try (TransactionSQLRepository repository = TransactionSQLRepository.open()) {
                 repository.deleteAll();
             }
@@ -48,8 +48,6 @@ public final class IngestionMain {
                         + totals.totalAmount().setScale(2, RoundingMode.HALF_UP).toPlainString());
                 out.println("Tempo total: " + elapsedMs + " ms");
             }
-        } finally {
-            ingestor.close();
         }
     }
 }
