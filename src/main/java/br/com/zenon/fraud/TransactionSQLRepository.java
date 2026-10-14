@@ -1,5 +1,6 @@
 package br.com.zenon.fraud;
 
+import java.math.BigDecimal;
 import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.PreparedStatement;
@@ -21,6 +22,12 @@ public final class TransactionSQLRepository implements TransactionRepository, Au
                 recipient_name, recipient_old_balance, recipient_new_balance,
                 is_fraud, is_flagged_fraud)
             VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+            """;
+    private static final String TOTALS = """
+            SELECT COUNT(*),
+                   COALESCE(SUM(is_fraud), 0),
+                   COALESCE(SUM(amount), 0)
+            FROM TRANSACTIONS
             """;
     private static final String SELECT_BY_ORIGIN = """
             SELECT step, type, amount,
@@ -97,6 +104,21 @@ public final class TransactionSQLRepository implements TransactionRepository, Au
             } finally {
                 connection.setAutoCommit(previousAutoCommit);
             }
+        } catch (SQLException error) {
+            throw new IllegalStateException("database operation failed", error);
+        }
+    }
+
+    public DatasetTotals totals() {
+        try (Statement statement = connection.createStatement();
+                ResultSet rows = statement.executeQuery(TOTALS)) {
+            if (!rows.next()) {
+                throw new IllegalStateException("database operation failed");
+            }
+            return new DatasetTotals(
+                    rows.getLong(1),
+                    rows.getBigDecimal(2).longValue(),
+                    rows.getBigDecimal(3));
         } catch (SQLException error) {
             throw new IllegalStateException("database operation failed", error);
         }
